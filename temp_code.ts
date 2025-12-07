@@ -59,7 +59,7 @@
       
   └─ bgController.ts.meta
   └─ bullet.ts
-      import { _decorator, Collider2D, Component, PhysicsSystem2D, view } from 'cc';
+      import { _decorator, Component, PhysicsSystem2D, view } from 'cc';
       import { GameManager } from './gameManager';
       const { ccclass, property } = _decorator;
       
@@ -97,7 +97,7 @@
       
   └─ bullet.ts.meta
   └─ enemy.ts
-      import { _decorator, Animation, Collider2D, Component, Contact2DType, director, IPhysics2DContact, PhysicsSystem2D, view, View } from 'cc';
+      import { _decorator, Animation, Collider2D, Component, Contact2DType, director, IPhysics2DContact, PhysicsSystem2D} from 'cc';
       import { bullet } from './bullet';
       import { GameManager } from './gameManager';
       const { ccclass, property } = _decorator;
@@ -281,7 +281,7 @@
       
   └─ enemyManger.ts.meta
   └─ gameManager.ts
-      import { _decorator, Component, Director, director, game, Game, Node, PhysicsSystem2D } from 'cc';
+      import { _decorator, Component, Director, director, Node, PhysicsSystem2D } from 'cc';
       import { gameoverUI } from './UI/gameoverUI';
       const { ccclass, property } = _decorator;
       
@@ -477,9 +477,9 @@
       
   └─ gameManager.ts.meta
   └─ playerController.ts
-      import { _decorator, Component, EventTouch, Input, input, instantiate, Node, Prefab, Vec3, view, UITransform, Collider2D, Contact2DType, Animation, IPhysics2DContact, game } from 'cc';
+      import { _decorator, Component, EventTouch, Input, input, instantiate, Node, Prefab, Vec3, UITransform, Collider2D, Contact2DType, Animation, IPhysics2DContact, game } from 'cc';
       import { reward } from './reward';
-      import { rewardManager, rewardType } from './rewardManager';
+      import { rewardType } from './rewardManager';
       import { GameManager } from './gameManager';
       const { ccclass, property } = _decorator;
       
@@ -519,6 +519,10 @@
           @property(Node)
           Position3: Node = null;
       
+          // 双击相关
+          private lastClickTime = 0;
+          private readonly doubleClickThreshold = 0.2;
+      
           @property()
           shootType: shootType = shootType.oneShoot;
       
@@ -540,6 +544,7 @@
       
           protected onLoad(): void {
               input.on(Input.EventType.TOUCH_MOVE, this.onTouchMove, this);
+              input.on(Input.EventType.TOUCH_START, this.onTouchStartDoubleClick, this);
       
               // 1) 正确获取 Canvas 节点（两种写法任选其一）
               // 推荐：通过场景查找 Canvas（确保场景里节点名确实是 "Canvas"）
@@ -652,6 +657,7 @@
       
           protected onDestroy(): void {
               input.off(Input.EventType.TOUCH_MOVE, this.onTouchMove, this);
+              input.off(Input.EventType.TOUCH_START, this.onTouchStartDoubleClick, this);
       
               this.unscheduleAllCallbacks();
       
@@ -678,6 +684,18 @@
       
               this.node.setPosition(newPos);
           }
+      
+          onTouchStartDoubleClick() {
+              const now = performance.now() / 1000;
+      
+              if (now - this.lastClickTime <= this.doubleClickThreshold) {
+                  console.log("触发了双击事件");
+                  this.lastClickTime = 0;
+              } else {
+                  this.lastClickTime = now;
+              }
+          }
+      
       
           protected update(dt: number): void {
               if (GameManager.instance.isPaused) return; // 新增
@@ -726,7 +744,7 @@
       
   └─ playerController.ts.meta
   └─ reward.ts
-      import { _decorator, Component, Game, Node } from 'cc';
+      import { _decorator, Component } from 'cc';
       import { rewardType } from './rewardManager';
       import { GameManager } from './gameManager';
       const { ccclass, property } = _decorator;
@@ -756,7 +774,7 @@
       
   └─ reward.ts.meta
   └─ rewardManager.ts
-      import { _decorator, Component, Node, Prefab, instantiate, view, math, Enum } from 'cc';
+      import { _decorator, Component, Prefab, instantiate, view, math, Enum } from 'cc';
       const { ccclass, property } = _decorator;
       
       export enum rewardType {
@@ -1050,5 +1068,3 @@
     └─ scoreUI.ts.meta
   └─ UI.meta
 └─ Scripts.meta
-  └─ use_bomb.mp3.meta
-└─ Sound.meta
